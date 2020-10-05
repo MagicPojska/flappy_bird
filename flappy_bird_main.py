@@ -32,6 +32,15 @@ def check_collision(pipes):         #Here we check for collisions
         return False
     return True
 
+def rotate_bird(bird):              #function for rotating bird using rotozoom
+    new_bird = pygame.transform.rotozoom(bird, -bird_movement * 3, 1)
+    return new_bird
+
+def bird_animation():               #this function is for new assets of bird to spawn where the last one was
+    new_bird = bird_frames[bird_index]
+    new_bird_rect = new_bird.get_rect(center = (100, bird_rect.centery))
+    return new_bird, new_bird_rect
+
 pygame.init()
 screen = pygame.display.set_mode((576,1024))    #setting the window size
 clock = pygame.time.Clock()
@@ -48,9 +57,20 @@ floor_surface = pygame.image.load('assets/base.png').convert()          #importi
 floor_surface = pygame.transform.scale2x(floor_surface)  
 floor_x_pos = 0                                                         #new variable for position so we can make it move a bit 
 
-bird_surface = pygame.image.load('assets/bluebird-midflap.png').convert()
-bird_surface = pygame.transform.scale2x(bird_surface)
-bird_rect = bird_surface.get_rect(center = (100,512))             #We are making a rectange around the image so we can later use it for colision(center of rectangle is at 100,512)
+bird_downflap = pygame.transform.scale2x(pygame.image.load('assets/bluebird-downflap.png').convert_alpha())     #Here we removed old bird and added new assets so we can animate it
+bird_midflap = pygame.transform.scale2x(pygame.image.load('assets/bluebird-midflap.png').convert_alpha())
+bird_upflap = pygame.transform.scale2x(pygame.image.load('assets/bluebird-upflap.png').convert_alpha())
+bird_frames = [bird_downflap, bird_midflap, bird_upflap]                                                        #We will animate it using a list that will by order display 3 states of bird
+bird_index = 0
+bird_surface = bird_frames[bird_index]
+bird_rect = bird_surface.get_rect(center = (100,512))
+
+
+BIRDFLAP = pygame.USEREVENT + 1
+pygame.time.set_timer(BIRDFLAP, 200)
+#bird_surface = pygame.image.load('assets/bluebird-midflap.png').convert_alpha() #We added alpha on convert so we dont get black square around the bird
+#bird_surface = pygame.transform.scale2x(bird_surface)
+#bird_rect = bird_surface.get_rect(center = (100,512))             #We are making a rectange around the image so we can later use it for colision(center of rectangle is at 100,512)
 
 pipe_surface = pygame.image.load('assets/pipe-green.png').convert()     #Adding pipes on the surface but without rectangles because we need a rectangle for each new pipe on the screen
 pipe_surface = pygame.transform.scale2x(pipe_surface)  
@@ -68,7 +88,7 @@ while True:     #we need a loopt so the game wont close after one run
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE and game_active:
                 bird_movement = 0
-                bird_movement -= 12
+                bird_movement -= 10
             if event.key == pygame.K_SPACE and game_active == False:
                 game_active = True
                 pipe_list.clear()
@@ -76,15 +96,21 @@ while True:     #we need a loopt so the game wont close after one run
                 bird_movement = 0
         if event.type == SPAWNPIPE:     #This event will create a new pipe and store it in the pipe_list
             pipe_list.extend(create_pipe())
-
+        if event.type == BIRDFLAP:
+            if bird_index < 2:
+                bird_index += 1
+            else:
+                bird_index = 0
+            bird_surface, bird_rect = bird_animation()
     #this all repeats every frame so if we increment a position of an asset for 1 it will move every time loops plays again (floor_x_pos += 1 as an example and the base will move to the right)
     screen.blit(bg_surface, (0,0))  #positioning assets on the screen
 
     if game_active:     #While game is true we will load this part of assets
         #Bird
         bird_movement += gravity
+        rotated_bird = rotate_bird(bird_surface)
         bird_rect.centery += bird_movement
-        screen.blit(bird_surface, bird_rect)
+        screen.blit(rotated_bird, bird_rect)
         game_active = check_collision(pipe_list)        #If we hit into something function will return False and the game wont load the assets for the bird and the pipes
 
         #Pipes
