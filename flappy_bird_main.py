@@ -41,14 +41,36 @@ def bird_animation():               #this function is for new assets of bird to 
     new_bird_rect = new_bird.get_rect(center = (100, bird_rect.centery))
     return new_bird, new_bird_rect
 
+def score_display(game_state):
+    if game_state == 'main_game':
+        score_surface = game_font.render(str(int(score)), False, (255,255,255))
+        score_rect = score_surface.get_rect(center = (288, 100))
+        screen.blit(score_surface, score_rect)
+    if game_state == 'game_over':
+        score_surface = game_font.render(f'Score: {int(score)}', False, (255,255,255))
+        score_rect = score_surface.get_rect(center = (288, 100))
+        screen.blit(score_surface, score_rect)
+
+        high_score_surface = game_font.render(f'High score: {int(high_score)}', False, (255,255,255))
+        high_score_rect = high_score_surface.get_rect(center = (288, 850))
+        screen.blit(high_score_surface, high_score_rect)
+
+def update_score(score, high_score):
+    if score > high_score:
+        high_score = score
+    return high_score
+
 pygame.init()
 screen = pygame.display.set_mode((576,1024))    #setting the window size
 clock = pygame.time.Clock()
+game_font = pygame.font.Font('04B_19.TTF', 40)
 
 # Game variables
 gravity = 0.25              #We made a new variable gravity so we can put it on every frame of the bird_movement
 bird_movement = 0
 game_active = True
+score = 0                   #Current score
+high_score = 0              #High score
 
 bg_surface = pygame.image.load('assets/background-day.png').convert()   #importing a bacground image (convert helps run the game faster)
 bg_surface = pygame.transform.scale2x(bg_surface)                       #scaling it 2x so it fits the screen
@@ -94,6 +116,7 @@ while True:     #we need a loopt so the game wont close after one run
                 pipe_list.clear()
                 bird_rect.center = (100, 512)
                 bird_movement = 0
+                score = 0
         if event.type == SPAWNPIPE:     #This event will create a new pipe and store it in the pipe_list
             pipe_list.extend(create_pipe())
         if event.type == BIRDFLAP:
@@ -116,6 +139,12 @@ while True:     #we need a loopt so the game wont close after one run
         #Pipes
         pipe_list = move_pipes(pipe_list)
         draw_pipes(pipe_list)
+
+        score += 0.01
+        score_display('main_game')
+    else:
+        high_score = update_score(score, high_score)
+        score_display('game_over')
 
     #Floor
     floor_x_pos -= 1
