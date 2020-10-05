@@ -101,6 +101,9 @@ SPAWNPIPE = pygame.USEREVENT                                            #Adding 
 pygame.time.set_timer(SPAWNPIPE, 1200)
 pipe_height = [400, 600, 800]
 
+game_over_surface = pygame.transform.scale2x(pygame.image.load('assets/message.png').convert_alpha())
+game_over_rect = game_over_surface.get_rect(center = (288, 512))
+
 #Making a screen to play on and our game loop:
 while True:     #we need a loopt so the game wont close after one run
     for event in pygame.event.get():    #for loopt that checks for pressed keys and does what we tell it to
@@ -143,6 +146,7 @@ while True:     #we need a loopt so the game wont close after one run
         score += 0.01
         score_display('main_game')
     else:
+        screen.blit(game_over_surface, game_over_rect)
         high_score = update_score(score, high_score)
         score_display('game_over')
 
