@@ -26,9 +26,11 @@ def draw_pipes(pipes):
 def check_collision(pipes):         #Here we check for collisions 
     for pipe in pipes:              #We check if bird is coliding with every pipe(we need for loop because a new pipe is generated every 1.2 seconds)
         if bird_rect.colliderect(pipe):
+            death_sound.play()
             return False
     
     if bird_rect.top <= -100 or bird_rect.bottom >= 900:    #And here we will return false if we hit top or bottom
+        death_sound.play()
         return False
     return True
 
@@ -60,6 +62,7 @@ def update_score(score, high_score):
         high_score = score
     return high_score
 
+pygame.mixer.pre_init(frequency = 44100, size = 16, channels = 1, buffer = 512)
 pygame.init()
 screen = pygame.display.set_mode((576,1024))    #setting the window size
 clock = pygame.time.Clock()
@@ -88,12 +91,10 @@ bird_surface = bird_frames[bird_index]
 bird_rect = bird_surface.get_rect(center = (100,512))
 
 
-BIRDFLAP = pygame.USEREVENT + 1
+BIRDFLAP = pygame.USEREVENT + 1                                         
 pygame.time.set_timer(BIRDFLAP, 200)
-#bird_surface = pygame.image.load('assets/bluebird-midflap.png').convert_alpha() #We added alpha on convert so we dont get black square around the bird
-#bird_surface = pygame.transform.scale2x(bird_surface)
-#bird_rect = bird_surface.get_rect(center = (100,512))             #We are making a rectange around the image so we can later use it for colision(center of rectangle is at 100,512)
-
+                                                                       
+                                                                       
 pipe_surface = pygame.image.load('assets/pipe-green.png').convert()     #Adding pipes on the surface but without rectangles because we need a rectangle for each new pipe on the screen
 pipe_surface = pygame.transform.scale2x(pipe_surface)  
 pipe_list = []
@@ -103,6 +104,11 @@ pipe_height = [400, 600, 800]
 
 game_over_surface = pygame.transform.scale2x(pygame.image.load('assets/message.png').convert_alpha())
 game_over_rect = game_over_surface.get_rect(center = (288, 512))
+
+flap_sound = pygame.mixer.Sound('audio/wing.wav')               #Importing sounds
+death_sound = pygame.mixer.Sound('audio/hit.wav')
+score_sound = pygame.mixer.Sound('audio/point.wav')
+score_sound_countdown = 100
 
 #Making a screen to play on and our game loop:
 while True:     #we need a loopt so the game wont close after one run
@@ -114,6 +120,7 @@ while True:     #we need a loopt so the game wont close after one run
             if event.key == pygame.K_SPACE and game_active:
                 bird_movement = 0
                 bird_movement -= 10
+                flap_sound.play()
             if event.key == pygame.K_SPACE and game_active == False:
                 game_active = True
                 pipe_list.clear()
@@ -145,6 +152,10 @@ while True:     #we need a loopt so the game wont close after one run
 
         score += 0.01
         score_display('main_game')
+        score_sound_countdown -=1
+        if score_sound_countdown <= 0:
+            score_sound.play()
+            score_sound_countdown = 100
     else:
         screen.blit(game_over_surface, game_over_rect)
         high_score = update_score(score, high_score)
