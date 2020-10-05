@@ -23,6 +23,15 @@ def draw_pipes(pipes):
             flip_pipe = pygame.transform.flip(pipe_surface, False, True)    
             screen.blit(flip_pipe, pipe)
 
+def check_collision(pipes):         #Here we check for collisions 
+    for pipe in pipes:              #We check if bird is coliding with every pipe(we need for loop because a new pipe is generated every 1.2 seconds)
+        if bird_rect.colliderect(pipe):
+            return False
+    
+    if bird_rect.top <= -100 or bird_rect.bottom >= 900:    #And here we will return false if we hit top or bottom
+        return False
+    return True
+
 pygame.init()
 screen = pygame.display.set_mode((576,1024))    #setting the window size
 clock = pygame.time.Clock()
@@ -30,6 +39,7 @@ clock = pygame.time.Clock()
 # Game variables
 gravity = 0.25              #We made a new variable gravity so we can put it on every frame of the bird_movement
 bird_movement = 0
+game_active = True
 
 bg_surface = pygame.image.load('assets/background-day.png').convert()   #importing a bacground image (convert helps run the game faster)
 bg_surface = pygame.transform.scale2x(bg_surface)                       #scaling it 2x so it fits the screen
@@ -56,23 +66,30 @@ while True:     #we need a loopt so the game wont close after one run
             pygame.quit()
             sys.exit()
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
+            if event.key == pygame.K_SPACE and game_active:
                 bird_movement = 0
                 bird_movement -= 12
+            if event.key == pygame.K_SPACE and game_active == False:
+                game_active = True
+                pipe_list.clear()
+                bird_rect.center = (100, 512)
+                bird_movement = 0
         if event.type == SPAWNPIPE:     #This event will create a new pipe and store it in the pipe_list
             pipe_list.extend(create_pipe())
 
     #this all repeats every frame so if we increment a position of an asset for 1 it will move every time loops plays again (floor_x_pos += 1 as an example and the base will move to the right)
     screen.blit(bg_surface, (0,0))  #positioning assets on the screen
 
-    #Bird
-    bird_movement += gravity
-    bird_rect.centery += bird_movement
-    screen.blit(bird_surface, bird_rect)
+    if game_active:     #While game is true we will load this part of assets
+        #Bird
+        bird_movement += gravity
+        bird_rect.centery += bird_movement
+        screen.blit(bird_surface, bird_rect)
+        game_active = check_collision(pipe_list)        #If we hit into something function will return False and the game wont load the assets for the bird and the pipes
 
-    #Pipes
-    pipe_list = move_pipes(pipe_list)
-    draw_pipes(pipe_list)
+        #Pipes
+        pipe_list = move_pipes(pipe_list)
+        draw_pipes(pipe_list)
 
     #Floor
     floor_x_pos -= 1
