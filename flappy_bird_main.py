@@ -150,9 +150,9 @@ while True:     #we need a loopt so the game wont close after one run
         pipe_list = move_pipes(pipe_list)
         draw_pipes(pipe_list)
 
-        score += 0.01
+        score += 0.008
         score_display('main_game')
-        score_sound_countdown -=1
+        score_sound_countdown -=0.8
         if score_sound_countdown <= 0:
             score_sound.play()
             score_sound_countdown = 100
