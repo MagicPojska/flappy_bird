@@ -170,3 +170,5 @@ while True:     #we need a loopt so the game wont close after one run
     pygame.display.update()
     clock.tick(120)
 
+
+
