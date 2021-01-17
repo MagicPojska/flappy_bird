@@ -21,7 +21,8 @@ def create_pipe():
 def move_pipes(pipes):  # This function takes all the pipe rectangles and moves them to the left
     for pipe in pipes:
         pipe.centerx -= 5
-    return pipes  # We return a new list of pipes
+    visible_pipes = [pipe for pipe in pipes if pipe.right > -50]
+    return visible_pipes  # We return a new list of pipes
 
 
 def draw_pipes(pipes):
@@ -98,7 +99,6 @@ def pipe_score_check():
                 can_score = True
 
 
-pygame.mixer.pre_init(frequency=44100, size=16, channels=1, buffer=512)
 pygame.init()
 screen = pygame.display.set_mode((576, 1024))  # setting the window size
 clock = pygame.time.Clock()
